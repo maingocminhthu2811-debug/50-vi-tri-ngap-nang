@@ -227,6 +227,10 @@ export default function App() {
 
       const markersGroup = L.layerGroup().addTo(map);
       markersLayerRef.current = markersGroup;
+
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 200);
     }
 
     return () => {
@@ -539,15 +543,15 @@ export default function App() {
               </div>
             </div>
 
-            {/* Map and Sidebar Container (9:3 Grid) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-stretch">
+            {/* Map and Sidebar Container (9:3 Grid) - Cố định hiển thị chiều dọc 700px */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-stretch lg:h-[700px]">
               {/* Map Column (lg:col-span-9) */}
-              <div className="lg:col-span-9 rounded-2xl overflow-hidden border border-white/90 relative bg-white shadow-2xl min-h-[600px] lg:min-h-[calc(100vh-250px)] flex flex-col">
+              <div className="lg:col-span-9 rounded-2xl overflow-hidden border border-white/90 relative bg-white shadow-2xl h-[700px] flex flex-col">
                 <div
                   ref={mapContainerRef}
                   id="map"
                   className="w-full h-full flex-1 z-10 relative"
-                  style={{ minHeight: '600px' }}
+                  style={{ minHeight: '700px', height: '700px' }}
                 />
 
                 {/* Floating Dynamic Legend Widget on Map */}
@@ -699,7 +703,7 @@ export default function App() {
               </div>
 
               {/* Sidebar List (lg:col-span-3) */}
-              <div className="lg:col-span-3 rounded-2xl border border-white/90 bg-white/85 backdrop-blur-md shadow-xl flex flex-col min-h-[600px] lg:max-h-[calc(100vh-250px)] overflow-hidden">
+              <div className="lg:col-span-3 rounded-2xl border border-white/90 bg-white/85 backdrop-blur-md shadow-xl flex flex-col h-[700px] max-h-[700px] overflow-hidden">
                 {/* Sidebar Header */}
                 <div className="p-4 border-b border-slate-200/80">
                   <div className="flex items-center justify-between mb-2">
