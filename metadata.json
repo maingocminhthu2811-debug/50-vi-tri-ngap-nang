@@ -1,0 +1,6 @@
+{
+  "name": "Bản Đồ 50 Điểm Ngập Nặng (Mức H) & Điểm Ngập Vừa, Nhẹ",
+  "description": "Bản đồ số hóa 50 vị trí ngập nặng (mức H) theo 3 kịch bản thời tiết và khu vực, cùng các điểm ngập vừa (M) và ngập nhẹ (L) tại TPHCM, Thủ Đức, Bình Dương, Bà Rịa - Vũng Tàu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
