@@ -82,31 +82,17 @@ export default function App() {
     return {
       total: floodPoints.length,
       severe: floodPoints.filter((p) => p.severityLevel === 'H').length,
-      moderate: floodPoints.filter((p) => p.severityLevel === 'M').length,
-      light: floodPoints.filter((p) => p.severityLevel === 'L').length,
       groupA: floodPoints.filter((p) => p.scenarioGroup === 'A').length,
       groupB: floodPoints.filter((p) => p.scenarioGroup === 'B').length,
       groupC: floodPoints.filter((p) => p.scenarioGroup === 'C').length,
     };
   }, []);
 
-  // Marker Icon Generator
+  // Marker Icon Generator (Mức H ngập nặng với vòng xung động đỏ)
   const createMarkerIcon = (point: FloodPoint, isSelected: boolean) => {
-    let color = '#dc2626';
-    let ringHtml = '';
-    const label = point.severityLevel;
-
-    if (point.severityLevel === 'H') {
-      color = '#dc2626';
-      ringHtml =
-        '<span class="absolute -inset-1.5 rounded-full bg-rose-500 opacity-80 pulse-severe"></span>';
-    } else if (point.severityLevel === 'M') {
-      color = '#ea580c';
-      ringHtml =
-        '<span class="absolute -inset-1 rounded-full bg-amber-500 opacity-60 pulse-moderate"></span>';
-    } else {
-      color = '#ca8a04';
-    }
+    const ringHtml =
+      '<span class="absolute -inset-1.5 rounded-full bg-rose-500 opacity-80 pulse-severe"></span>';
+    const label = point.stt ? point.stt : 'H';
 
     const scaleClass = isSelected
       ? 'scale-125 ring-4 ring-sky-400'
@@ -115,8 +101,8 @@ export default function App() {
     const html = `
       <div class="relative flex items-center justify-center w-8 h-8 cursor-pointer group">
         ${ringHtml}
-        <div class="relative w-6 h-6 rounded-full border-2 border-white flex items-center justify-center shadow-lg transition-transform ${scaleClass}" style="background-color: ${color}">
-          <span class="text-[10px] font-black text-white leading-none font-mono">${label}</span>
+        <div class="relative w-6 h-6 rounded-full border-2 border-white flex items-center justify-center shadow-lg transition-transform ${scaleClass}" style="background-color: #dc2626">
+          <span class="text-[9px] font-black text-white leading-none font-mono">${label}</span>
         </div>
       </div>
     `;
@@ -132,14 +118,7 @@ export default function App() {
 
   // Popup Content Generator (strictly original text - no additions)
   const buildPopupContent = (point: FloodPoint) => {
-    let badgeHtml = '';
-    if (point.severityLevel === 'H') {
-      badgeHtml = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-rose-100 text-rose-700 border border-rose-300">🔴 MỨC H - NGẬP NẶNG</span>`;
-    } else if (point.severityLevel === 'M') {
-      badgeHtml = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-100 text-amber-800 border border-amber-300">🟠 MỨC M - NGẬP VỪA</span>`;
-    } else {
-      badgeHtml = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-yellow-100 text-yellow-800 border border-yellow-300">🟡 MỨC L - NGẬP NHẸ</span>`;
-    }
+    const badgeHtml = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-rose-100 text-rose-700 border border-rose-300">🔴 MỨC H - NGẬP NẶNG</span>`;
 
     const rankBadge = point.stt
       ? `<span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-slate-900 text-white">STT ${point.stt}/50</span>`
@@ -400,93 +379,199 @@ export default function App() {
                 </h1>
               </div>
 
-              {/* Dàn 3 mục theo chiều ngang dưới title (bỏ tất cả vị trí) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5 w-full">
-                <button
-                  onClick={() =>
-                    setSelectedSeverity(selectedSeverity === 'H' ? 'all' : 'H')
-                  }
-                  className={`w-full px-4 sm:px-5 py-3 sm:py-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-xs sm:text-sm font-extrabold cursor-pointer shadow-xs hover:shadow-md active:scale-95 ${
-                    selectedSeverity === 'H'
-                      ? 'bg-rose-600 text-white border-rose-600 ring-4 ring-rose-500/30 shadow-rose-600/30 shadow-md'
-                      : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50 hover:border-rose-400'
+              {/* 3 Kịch bản thời tiết (Nhóm A, Nhóm B, Nhóm C) - Bố trí trên bản đồ */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 items-stretch w-full">
+                {/* Nhóm A */}
+                <div
+                  onClick={() => {
+                    setSelectedScenario(selectedScenario === 'A' ? 'all' : 'A');
+                  }}
+                  className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer backdrop-blur-md relative overflow-hidden group shadow-xs hover:shadow-md flex flex-col justify-between ${
+                    selectedScenario === 'A'
+                      ? 'bg-rose-50/95 border-rose-600 ring-4 ring-rose-500/25 shadow-rose-600/15'
+                      : 'bg-white/95 border-rose-200/90 hover:border-rose-400 hover:bg-rose-50/40'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="relative flex h-3.5 w-3.5 shrink-0 items-center justify-center">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
-                      <span className="relative inline-flex h-3 w-3 rounded-full bg-rose-600 border border-white"></span>
-                    </span>
-                    <span className="tracking-tight truncate">MỨC H (NGẬP NẶNG)</span>
-                  </div>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-lg text-xs font-black font-mono tabular-nums shrink-0 ${
-                      selectedSeverity === 'H'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-rose-100 text-rose-800 border border-rose-200'
-                    }`}
-                  >
-                    {counts.severe} vị trí
-                  </span>
-                </button>
+                  <div>
+                    {/* Header card */}
+                    <div className="flex items-center gap-2.5 mb-3 pb-3 border-b border-rose-100">
+                      <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold shrink-0 shadow-xs">
+                        <CloudRain className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[11px] font-black px-2 py-0.5 rounded-md bg-rose-600 text-white font-mono uppercase tracking-wide">
+                            Mức H
+                          </span>
+                          <span className="text-xs font-extrabold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md">
+                            21 vị trí
+                          </span>
+                        </div>
+                        <h3 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-rose-700 transition-colors mt-0.5 leading-snug">
+                          Nhóm A: Ngập khi mưa lớn
+                        </h3>
+                      </div>
+                    </div>
 
-                <button
-                  onClick={() =>
-                    setSelectedSeverity(selectedSeverity === 'M' ? 'all' : 'M')
-                  }
-                  className={`w-full px-4 sm:px-5 py-3 sm:py-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-xs sm:text-sm font-extrabold cursor-pointer shadow-xs hover:shadow-md active:scale-95 ${
-                    selectedSeverity === 'M'
-                      ? 'bg-amber-600 text-white border-amber-600 ring-4 ring-amber-500/30 shadow-amber-600/30 shadow-md'
-                      : 'bg-white text-amber-700 border-amber-300 hover:bg-amber-50 hover:border-amber-400'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="relative flex h-3.5 w-3.5 shrink-0 items-center justify-center">
-                      <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-500 border border-white"></span>
-                    </span>
-                    <span className="tracking-tight truncate">MỨC M (NGẬP VỪA)</span>
+                    {/* Nội dung khuyến cáo ngắt dòng, nhấn mạnh số liệu */}
+                    <div className="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                      <div className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
+                        <p>
+                          Nước dâng nhanh trong cơn mưa từ{' '}
+                          <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100 font-mono">
+                            30mm trở lên
+                          </strong>
+                          , nước sẽ rút sau mưa.
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
+                        <p>
+                          Cần hạn chế đi vào hoặc chờ tạnh mưa{' '}
+                          <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100 font-mono">
+                            30 – 45 phút
+                          </strong>
+                          .
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-lg text-xs font-black font-mono tabular-nums shrink-0 ${
-                      selectedSeverity === 'M'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-amber-100 text-amber-800 border border-amber-200'
-                    }`}
-                  >
-                    {counts.moderate} vị trí
-                  </span>
-                </button>
+                </div>
 
-                <button
-                  onClick={() =>
-                    setSelectedSeverity(selectedSeverity === 'L' ? 'all' : 'L')
-                  }
-                  className={`w-full px-4 sm:px-5 py-3 sm:py-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-xs sm:text-sm font-extrabold cursor-pointer shadow-xs hover:shadow-md active:scale-95 ${
-                    selectedSeverity === 'L'
-                      ? 'bg-yellow-500 text-slate-900 border-yellow-500 ring-4 ring-yellow-400/35 shadow-yellow-500/30 shadow-md'
-                      : 'bg-white text-yellow-800 border-yellow-300 hover:bg-yellow-50 hover:border-yellow-400'
+                {/* Nhóm B */}
+                <div
+                  onClick={() => {
+                    setSelectedScenario(selectedScenario === 'B' ? 'all' : 'B');
+                  }}
+                  className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer backdrop-blur-md relative overflow-hidden group shadow-xs hover:shadow-md flex flex-col justify-between ${
+                    selectedScenario === 'B'
+                      ? 'bg-rose-50/95 border-rose-600 ring-4 ring-rose-500/25 shadow-rose-600/15'
+                      : 'bg-white/95 border-rose-200/90 hover:border-rose-400 hover:bg-rose-50/40'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="relative flex h-3.5 w-3.5 shrink-0 items-center justify-center">
-                      <span className="relative inline-flex h-3 w-3 rounded-full bg-yellow-500 border border-white"></span>
-                    </span>
-                    <span className="tracking-tight truncate">MỨC L (NGẬP NHẸ)</span>
+                  <div>
+                    {/* Header card */}
+                    <div className="flex items-center gap-2.5 mb-3 pb-3 border-b border-rose-100">
+                      <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold shrink-0 shadow-xs">
+                        <Waves className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[11px] font-black px-2 py-0.5 rounded-md bg-rose-600 text-white font-mono uppercase tracking-wide">
+                            Mức H
+                          </span>
+                          <span className="text-xs font-extrabold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md">
+                            9 vị trí
+                          </span>
+                        </div>
+                        <h3 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-rose-700 transition-colors mt-0.5 leading-snug">
+                          Nhóm B: Ngập khi triều cường
+                        </h3>
+                      </div>
+                    </div>
+
+                    {/* Nội dung khuyến cáo ngắt dòng, nhấn mạnh số liệu (đã bỏ box dự án 570km²) */}
+                    <div className="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                      <div className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
+                        <p>
+                          Ngập theo chu kỳ con nước{' '}
+                          <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100">
+                            rằm
+                          </strong>{' '}
+                          và{' '}
+                          <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100">
+                            mồng 1 Âm lịch
+                          </strong>
+                          .
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
+                        <p>
+                          Khung giờ cao điểm:{' '}
+                          <strong className="text-rose-700 font-black px-1 py-0.5 rounded bg-rose-100 font-mono">
+                            5h00 – 8h00
+                          </strong>{' '}
+                          và{' '}
+                          <strong className="text-rose-700 font-black px-1 py-0.5 rounded bg-rose-100 font-mono">
+                            16h00 – 20h00
+                          </strong>{' '}
+                          (kể cả trời nắng ráo).
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-lg text-xs font-black font-mono tabular-nums shrink-0 ${
-                      selectedSeverity === 'L'
-                        ? 'bg-slate-900/15 text-slate-900'
-                        : 'bg-yellow-100 text-yellow-900 border border-yellow-200'
-                    }`}
-                  >
-                    {counts.light} tuyến
-                  </span>
-                </button>
+                </div>
+
+                {/* Nhóm C */}
+                <div
+                  onClick={() => {
+                    setSelectedScenario(selectedScenario === 'C' ? 'all' : 'C');
+                  }}
+                  className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer backdrop-blur-md relative overflow-hidden group shadow-xs hover:shadow-md flex flex-col justify-between ${
+                    selectedScenario === 'C'
+                      ? 'bg-rose-50/95 border-rose-600 ring-4 ring-rose-500/25 shadow-rose-600/15'
+                      : 'bg-white/95 border-rose-200/90 hover:border-rose-400 hover:bg-rose-50/40'
+                  }`}
+                >
+                  <div>
+                    {/* Header card */}
+                    <div className="flex items-center gap-2.5 mb-3 pb-3 border-b border-rose-100">
+                      <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold shrink-0 shadow-xs">
+                        <ShieldAlert className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[11px] font-black px-2 py-0.5 rounded-md bg-rose-600 text-white font-mono uppercase tracking-wide">
+                            Mức H
+                          </span>
+                          <span className="text-xs font-extrabold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md">
+                            20 vị trí
+                          </span>
+                        </div>
+                        <h3 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-rose-700 transition-colors mt-0.5 leading-snug">
+                          Nhóm C: Ngập kép Mưa + Triều
+                        </h3>
+                      </div>
+                    </div>
+
+                    {/* Nội dung khuyến cáo ngắt dòng, nhấn mạnh */}
+                    <div className="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                      <div className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
+                        <p>
+                          Đây là nhóm{' '}
+                          <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100 uppercase tracking-tight">
+                            “điểm nóng” rủi ro cao nhất
+                          </strong>
+                          .
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
+                        <p>
+                          Mưa lớn gặp triều cường: nước từ sông rạch chảy ngược vào cống làm mất khả năng tự chảy.
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
+                        <p>
+                          Gây ngập sâu cục bộ và kéo dài{' '}
+                          <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100">
+                            nhiều giờ
+                          </strong>
+                          .
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Filter Bar (Search + Region + Severity + Scenario + Reset) */}
+            {/* Filter Bar (Search + Region + Scenario + Reset) */}
             <div className="bg-white/80 border border-white/90 backdrop-blur-md rounded-2xl p-3.5 mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center shadow-lg shadow-slate-900/5">
               {/* Search */}
               <div className="md:col-span-4 relative">
@@ -494,7 +579,7 @@ export default function App() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Tìm theo tên đường (VD: Phan Văn Hớn, QL13, Calmette...)"
+                  placeholder="Tìm theo tên đường (VD: Phan Văn Hớn, Ung Văn Khiêm, Calmette...)"
                   className="w-full bg-slate-50/80 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20 transition-all pl-9"
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
@@ -510,8 +595,8 @@ export default function App() {
                   <option value="all">Tất cả địa bàn</option>
                   <option value="hcm-old">TPHCM trước đây</option>
                   <option value="thu-duc">Khu vực Thủ Đức</option>
-                  <option value="binh-duong">Bình Dương trước đây</option>
-                  <option value="vung-tau">Bà Rịa - Vũng Tàu</option>
+                  <option value="binh-duong">Khu vực Bình Dương</option>
+                  <option value="vung-tau">Khu vực Bà Rịa - Vũng Tàu</option>
                 </select>
               </div>
 
@@ -522,12 +607,10 @@ export default function App() {
                   onChange={(e) => setSelectedScenario(e.target.value)}
                   className="w-full bg-slate-50/80 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20 transition-all"
                 >
-                  <option value="all">Tất cả kịch bản &amp; cụm điểm</option>
-                  <option value="A">Nhóm A: Ngập khi mưa lớn (21 điểm H)</option>
-                  <option value="B">Nhóm B: Ngập khi triều cường (9 điểm H)</option>
-                  <option value="C">Nhóm C: Ngập kép mưa &amp; triều (20 điểm H)</option>
-                  <option value="M">Cụm ngập vừa - mức M (10 điểm)</option>
-                  <option value="L">Cụm ngập nhẹ - mức L (21 điểm)</option>
+                  <option value="all">Tất cả 3 kịch bản (50 điểm H)</option>
+                  <option value="A">Nhóm A: Ngập khi mưa lớn (21 điểm)</option>
+                  <option value="B">Nhóm B: Ngập khi triều cường (9 điểm)</option>
+                  <option value="C">Nhóm C: Ngập kép mưa &amp; triều (20 điểm)</option>
                 </select>
               </div>
 
@@ -561,11 +644,11 @@ export default function App() {
                 >
                   <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-200/80">
                     <span className="font-bold text-slate-800 tracking-tight text-[11px] uppercase truncate">
-                      Chú thích mức ngập
+                      Kịch bản ngập (Mức H)
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="font-mono text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200 tabular-nums font-semibold">
-                        {filteredPoints.length}
+                      <span className="font-mono text-[10px] text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200 tabular-nums font-semibold">
+                        {filteredPoints.length}/50
                       </span>
                       <button
                         onClick={() => setIsLegendCollapsed(!isLegendCollapsed)}
@@ -583,13 +666,13 @@ export default function App() {
 
                   {!isLegendCollapsed && (
                     <div className="space-y-1.5 transition-all duration-300">
-                      {/* Mức H */}
+                      {/* Nhóm A */}
                       <div
                         onClick={() =>
-                          setSelectedSeverity(selectedSeverity === 'H' ? 'all' : 'H')
+                          setSelectedScenario(selectedScenario === 'A' ? 'all' : 'A')
                         }
                         className={`flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer ${
-                          selectedSeverity === 'H' ? 'bg-rose-50 ring-1 ring-rose-300' : ''
+                          selectedScenario === 'A' ? 'bg-rose-50 ring-1 ring-rose-300' : ''
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
@@ -599,70 +682,71 @@ export default function App() {
                           </div>
                           <div className="min-w-0">
                             <div className="text-[11px] font-bold text-rose-700 truncate leading-tight">
-                              Mức H: Ngập nặng (50 điểm)
+                              Nhóm A: Mưa lớn
                             </div>
                             <div className="text-[10px] text-slate-500 leading-tight">
-                              Nhóm A (21), B (9), C (20)
+                              21 vị trí mức H
                             </div>
                           </div>
                         </div>
                         <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border text-rose-700 bg-rose-50 border-rose-200 shrink-0 tabular-nums">
-                          {filteredPoints.filter((p) => p.severityLevel === 'H').length}
+                          {filteredPoints.filter((p) => p.scenarioGroup === 'A').length}
                         </span>
                       </div>
 
-                      {/* Mức M */}
+                      {/* Nhóm B */}
                       <div
                         onClick={() =>
-                          setSelectedSeverity(selectedSeverity === 'M' ? 'all' : 'M')
+                          setSelectedScenario(selectedScenario === 'B' ? 'all' : 'B')
                         }
                         className={`flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer ${
-                          selectedSeverity === 'M' ? 'bg-amber-50 ring-1 ring-amber-300' : ''
+                          selectedScenario === 'B' ? 'bg-rose-50 ring-1 ring-rose-300' : ''
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="relative flex items-center justify-center w-3 h-3 shrink-0">
-                            <span className="absolute -inset-1 rounded-full bg-amber-500 opacity-60 pulse-moderate"></span>
-                            <span className="relative w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                            <span className="absolute -inset-1 rounded-full bg-rose-500 opacity-70 pulse-severe"></span>
+                            <span className="relative w-2.5 h-2.5 rounded-full bg-rose-600"></span>
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[11px] font-bold text-amber-800 truncate leading-tight">
-                              Mức M: Ngập vừa
+                            <div className="text-[11px] font-bold text-rose-700 truncate leading-tight">
+                              Nhóm B: Triều cường
                             </div>
                             <div className="text-[10px] text-slate-500 leading-tight">
-                              Cụm TSN &amp; QL13
+                              9 vị trí mức H
                             </div>
                           </div>
                         </div>
-                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border text-amber-800 bg-amber-50 border-amber-200 shrink-0 tabular-nums">
-                          {filteredPoints.filter((p) => p.severityLevel === 'M').length}
+                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border text-rose-700 bg-rose-50 border-rose-200 shrink-0 tabular-nums">
+                          {filteredPoints.filter((p) => p.scenarioGroup === 'B').length}
                         </span>
                       </div>
 
-                      {/* Mức L */}
+                      {/* Nhóm C */}
                       <div
                         onClick={() =>
-                          setSelectedSeverity(selectedSeverity === 'L' ? 'all' : 'L')
+                          setSelectedScenario(selectedScenario === 'C' ? 'all' : 'C')
                         }
                         className={`flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer ${
-                          selectedSeverity === 'L' ? 'bg-yellow-50 ring-1 ring-yellow-300' : ''
+                          selectedScenario === 'C' ? 'bg-rose-50 ring-1 ring-rose-300' : ''
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="relative flex items-center justify-center w-3 h-3 shrink-0">
-                            <span className="relative w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                            <span className="absolute -inset-1 rounded-full bg-rose-500 opacity-70 pulse-severe"></span>
+                            <span className="relative w-2.5 h-2.5 rounded-full bg-rose-600"></span>
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[11px] font-bold text-yellow-800 truncate leading-tight">
-                              Mức L: Ngập nhẹ
+                            <div className="text-[11px] font-bold text-rose-700 truncate leading-tight">
+                              Nhóm C: Mưa + Triều
                             </div>
                             <div className="text-[10px] text-slate-500 leading-tight">
-                              21 tuyến trung tâm
+                              20 vị trí mức H
                             </div>
                           </div>
                         </div>
-                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border text-yellow-800 bg-yellow-50 border-yellow-200 shrink-0 tabular-nums">
-                          {filteredPoints.filter((p) => p.severityLevel === 'L').length}
+                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border text-rose-700 bg-rose-50 border-rose-200 shrink-0 tabular-nums">
+                          {filteredPoints.filter((p) => p.scenarioGroup === 'C').length}
                         </span>
                       </div>
                     </div>
@@ -683,21 +767,21 @@ export default function App() {
                     className="px-3 py-1.5 text-xs font-semibold bg-white/90 text-indigo-700 hover:bg-white rounded-lg border border-slate-200/90 backdrop-blur-md shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <Navigation className="w-3 h-3" />
-                    Thủ Đức
+                    Khu vực Thủ Đức
                   </button>
                   <button
                     onClick={() => focusRegion('binhduong')}
                     className="px-3 py-1.5 text-xs font-semibold bg-white/90 text-amber-700 hover:bg-white rounded-lg border border-slate-200/90 backdrop-blur-md shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <Navigation className="w-3 h-3" />
-                    Bình Dương
+                    Khu vực Bình Dương
                   </button>
                   <button
                     onClick={() => focusRegion('vungtau')}
                     className="px-3 py-1.5 text-xs font-semibold bg-white/90 text-emerald-700 hover:bg-white rounded-lg border border-slate-200/90 backdrop-blur-md shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <Navigation className="w-3 h-3" />
-                    Bà Rịa - Vũng Tàu
+                    Khu vực Bà Rịa - Vũng Tàu
                   </button>
                 </div>
               </div>
@@ -721,44 +805,44 @@ export default function App() {
                   {/* Level Filter Tabs */}
                   <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl text-[10px] font-bold">
                     <button
-                      onClick={() => setSelectedSeverity('all')}
+                      onClick={() => setSelectedScenario('all')}
                       className={`py-1 rounded-lg transition-all cursor-pointer ${
-                        selectedSeverity === 'all'
+                        selectedScenario === 'all'
                           ? 'bg-white text-slate-900 shadow-xs'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      Tất cả
+                      Tất cả ({counts.total})
                     </button>
                     <button
-                      onClick={() => setSelectedSeverity('H')}
+                      onClick={() => setSelectedScenario('A')}
                       className={`py-1 rounded-lg transition-all cursor-pointer ${
-                        selectedSeverity === 'H'
+                        selectedScenario === 'A'
                           ? 'bg-rose-600 text-white shadow-xs'
                           : 'text-rose-700 hover:bg-rose-100/60'
                       }`}
                     >
-                      Mức H
+                      Nhóm A
                     </button>
                     <button
-                      onClick={() => setSelectedSeverity('M')}
+                      onClick={() => setSelectedScenario('B')}
                       className={`py-1 rounded-lg transition-all cursor-pointer ${
-                        selectedSeverity === 'M'
-                          ? 'bg-amber-600 text-white shadow-xs'
-                          : 'text-amber-700 hover:bg-amber-100/60'
+                        selectedScenario === 'B'
+                          ? 'bg-rose-600 text-white shadow-xs'
+                          : 'text-rose-700 hover:bg-rose-100/60'
                       }`}
                     >
-                      Mức M
+                      Nhóm B
                     </button>
                     <button
-                      onClick={() => setSelectedSeverity('L')}
+                      onClick={() => setSelectedScenario('C')}
                       className={`py-1 rounded-lg transition-all cursor-pointer ${
-                        selectedSeverity === 'L'
-                          ? 'bg-yellow-600 text-white shadow-xs'
-                          : 'text-yellow-800 hover:bg-yellow-100/60'
+                        selectedScenario === 'C'
+                          ? 'bg-rose-600 text-white shadow-xs'
+                          : 'text-rose-700 hover:bg-rose-100/60'
                       }`}
                     >
-                      Mức L
+                      Nhóm C
                     </button>
                   </div>
                 </div>
@@ -775,19 +859,8 @@ export default function App() {
                   ) : (
                     filteredPoints.map((point) => {
                       const isSelected = selectedPointId === point.id;
-
-                      let badgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
-                      let dotColor = 'bg-slate-400';
-                      if (point.severityLevel === 'H') {
-                        badgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
-                        dotColor = 'bg-rose-500';
-                      } else if (point.severityLevel === 'M') {
-                        badgeClass = 'bg-amber-50 text-amber-800 border-amber-200';
-                        dotColor = 'bg-amber-500';
-                      } else {
-                        badgeClass = 'bg-yellow-50 text-yellow-800 border-yellow-200';
-                        dotColor = 'bg-yellow-500';
-                      }
+                      const badgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+                      const dotColor = 'bg-rose-500';
 
                       return (
                         <div
@@ -843,227 +916,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* 3 Weather Scenarios Presentation Cards (Tone đỏ mức H, ngắt dòng rõ nghĩa, nhấn mạnh số, icon xe ngập ở góc phải) */}
-            <div className="mt-5 sm:mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Nhóm A */}
-              <div
-                onClick={() => {
-                  if (selectedScenario === 'A') {
-                    setSelectedScenario('all');
-                  } else {
-                    setSelectedScenario('A');
-                    setSelectedSeverity('H');
-                  }
-                }}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer backdrop-blur-md relative overflow-hidden group shadow-xs hover:shadow-md ${
-                  selectedScenario === 'A'
-                    ? 'bg-rose-50/95 border-rose-600 ring-4 ring-rose-500/25 shadow-rose-600/15'
-                    : 'bg-white/95 border-rose-200/90 hover:border-rose-400 hover:bg-rose-50/40'
-                }`}
-              >
-                {/* Header card */}
-                <div className="flex items-center gap-2.5 mb-3 pb-3 border-b border-rose-100">
-                  <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold shrink-0 shadow-xs">
-                    <CloudRain className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] font-black px-2 py-0.5 rounded-md bg-rose-600 text-white font-mono uppercase tracking-wide">
-                        Mức H
-                      </span>
-                      <span className="text-xs font-extrabold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md">
-                        21 vị trí
-                      </span>
-                    </div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-rose-700 transition-colors mt-0.5 leading-snug">
-                      Nhóm A: Ngập khi mưa lớn
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Nội dung khuyến cáo ngắt dòng, nhấn mạnh số liệu */}
-                <div className="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
-                  <div className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
-                    <p>
-                      Nước dâng nhanh trong cơn mưa từ{' '}
-                      <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100 font-mono">
-                        30mm trở lên
-                      </strong>
-                      , nước sẽ rút sau mưa.
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
-                    <p>
-                      Cần hạn chế đi vào hoặc chờ tạnh mưa{' '}
-                      <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100 font-mono">
-                        30 – 45 phút
-                      </strong>
-                      .
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Nhóm B */}
-              <div
-                onClick={() => {
-                  if (selectedScenario === 'B') {
-                    setSelectedScenario('all');
-                  } else {
-                    setSelectedScenario('B');
-                    setSelectedSeverity('H');
-                  }
-                }}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer backdrop-blur-md relative overflow-hidden group shadow-xs hover:shadow-md ${
-                  selectedScenario === 'B'
-                    ? 'bg-rose-50/95 border-rose-600 ring-4 ring-rose-500/25 shadow-rose-600/15'
-                    : 'bg-white/95 border-rose-200/90 hover:border-rose-400 hover:bg-rose-50/40'
-                }`}
-              >
-                {/* Header card */}
-                <div className="flex items-center gap-2.5 mb-3 pb-3 border-b border-rose-100">
-                  <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold shrink-0 shadow-xs">
-                    <Waves className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] font-black px-2 py-0.5 rounded-md bg-rose-600 text-white font-mono uppercase tracking-wide">
-                        Mức H
-                      </span>
-                      <span className="text-xs font-extrabold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md">
-                        9 vị trí
-                      </span>
-                    </div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-rose-700 transition-colors mt-0.5 leading-snug">
-                      Nhóm B: Ngập khi triều cường
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Nội dung khuyến cáo ngắt dòng, nhấn mạnh số liệu */}
-                <div className="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed mb-3">
-                  <div className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
-                    <p>
-                      Ngập theo chu kỳ con nước{' '}
-                      <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100">
-                        rằm
-                      </strong>{' '}
-                      và{' '}
-                      <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100">
-                        mồng 1 Âm lịch
-                      </strong>
-                      .
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span>
-                    <p>
-                      Khung giờ cao điểm:{' '}
-                      <strong className="text-rose-700 font-black px-1 py-0.5 rounded bg-rose-100 font-mono">
-                        5h00 – 8h00
-                      </strong>{' '}
-                      và{' '}
-                      <strong className="text-rose-700 font-black px-1 py-0.5 rounded bg-rose-100 font-mono">
-                        16h00 – 20h00
-                      </strong>{' '}
-                      (kể cả trời nắng ráo).
-                    </p>
-                  </div>
-                </div>
-
-                {/* Hộp tiến độ dự án 570km² */}
-                <div className="text-xs sm:text-sm text-rose-950 bg-rose-100/80 p-3 rounded-xl border border-rose-200 font-medium leading-relaxed">
-                  Dự án ngăn triều{' '}
-                  <strong className="text-rose-800 font-black font-mono">
-                    570km²
-                  </strong>{' '}
-                  hiện đạt{' '}
-                  <strong className="text-rose-800 font-black font-mono">
-                    93%
-                  </strong>{' '}
-                  khối lượng; hoàn thành chậm nhất năm{' '}
-                  <strong className="text-rose-800 font-black font-mono">
-                    2027
-                  </strong>{' '}
-                  sẽ giải quyết dứt điểm{' '}
-                  <strong className="text-rose-800 font-black font-mono">
-                    8/9
-                  </strong>{' '}
-                  vị trí ngập do triều.
-                </div>
-              </div>
-
-              {/* Nhóm C */}
-              <div
-                onClick={() => {
-                  if (selectedScenario === 'C') {
-                    setSelectedScenario('all');
-                  } else {
-                    setSelectedScenario('C');
-                    setSelectedSeverity('H');
-                  }
-                }}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer backdrop-blur-md relative overflow-hidden group shadow-xs hover:shadow-md ${
-                  selectedScenario === 'C'
-                    ? 'bg-rose-50/95 border-rose-600 ring-4 ring-rose-500/25 shadow-rose-600/15'
-                    : 'bg-white/95 border-rose-200/90 hover:border-rose-400 hover:bg-rose-50/40'
-                }`}
-              >
-                {/* Header card */}
-                <div className="flex items-center gap-2.5 mb-3 pb-3 border-b border-rose-100">
-                  <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold shrink-0 shadow-xs">
-                    <ShieldAlert className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] font-black px-2 py-0.5 rounded-md bg-rose-600 text-white font-mono uppercase tracking-wide">
-                        Mức H
-                      </span>
-                      <span className="text-xs font-extrabold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md">
-                        20 vị trí
-                      </span>
-                    </div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-rose-700 transition-colors mt-0.5 leading-snug">
-                      Nhóm C: Ngập kép Mưa + Triều
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Nội dung khuyến cáo ngắt dòng, nhấn mạnh */}
-                <div className="space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
-                  <div className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-600 mt-2 shrink-0"></span>
-                    <p>
-                      Đây là nhóm{' '}
-                      <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100 uppercase tracking-tight">
-                        “điểm nóng” rủi ro cao nhất
-                      </strong>
-                      .
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-600 mt-2 shrink-0"></span>
-                    <p>
-                      Mưa lớn gặp triều cường: nước từ sông rạch chảy ngược vào
-                      cống làm mất khả năng tự chảy.
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-600 mt-2 shrink-0"></span>
-                    <p>
-                      Gây ngập sâu cục bộ và kéo dài{' '}
-                      <strong className="text-rose-700 font-black px-1.5 py-0.5 rounded bg-rose-100">
-                        nhiều giờ
-                      </strong>
-                      .
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
       </main>
@@ -1101,10 +953,10 @@ export default function App() {
                 </div>
                 <div>
                   <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
-                    Hướng Dẫn &amp; Ý Nghĩa Phân Loại
+                    Hướng Dẫn &amp; Ý Nghĩa 3 Kịch Bản Thời Tiết
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Ý nghĩa các kịch bản thời tiết (A, B, C) và phân loại mức độ ngập (H, M, L)
+                    Bản đồ số hóa tập trung 50 vị trí ngập nặng (Mức H) theo 3 kịch bản thời tiết
                   </p>
                 </div>
               </div>
@@ -1123,7 +975,7 @@ export default function App() {
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2.5 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                  1. Phân loại mức độ ngập (H, M, L)
+                  1. Mức độ ngập: Mức H (Ngập nặng)
                 </h3>
                 <div className="space-y-2.5">
                   {/* Mức H */}
@@ -1133,40 +985,10 @@ export default function App() {
                     </span>
                     <div>
                       <h4 className="font-bold text-rose-950 text-xs sm:text-sm">
-                        Ngập nặng / Ngập thường xuyên
+                        Ngập nặng / Điểm xung yếu (50 vị trí)
                       </h4>
                       <p className="text-slate-600 text-xs sm:text-sm mt-0.5 leading-relaxed">
-                        Các vị trí trũng thấp, ngập sâu khi lượng mưa từ 30mm trở lên hoặc triều cường dâng cao. Nước gây chết máy phương tiện và cản trở lưu thông; thời gian nước rút sau 30-45 phút khi dứt mưa hoặc theo con nước triều.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Mức M */}
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 flex items-start gap-3">
-                    <span className="px-2.5 py-1 rounded-xl bg-amber-600 text-white font-extrabold text-xs shrink-0 font-mono shadow-xs">
-                      Mức M
-                    </span>
-                    <div>
-                      <h4 className="font-bold text-amber-950 text-xs sm:text-sm">
-                        Ngập vừa
-                      </h4>
-                      <p className="text-slate-600 text-xs sm:text-sm mt-0.5 leading-relaxed">
-                        Ngập trong thời gian diễn ra mưa to; độ sâu ngập trung bình từ 10cm đến 15cm. Thời gian nước rút nhanh dưới 30 phút sau khi mưa giảm.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Mức L */}
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-yellow-50/70 border border-yellow-200 flex items-start gap-3">
-                    <span className="px-2.5 py-1 rounded-xl bg-yellow-500 text-slate-900 font-extrabold text-xs shrink-0 font-mono shadow-xs">
-                      Mức L
-                    </span>
-                    <div>
-                      <h4 className="font-bold text-yellow-950 text-xs sm:text-sm">
-                        Ngập nhẹ
-                      </h4>
-                      <p className="text-slate-600 text-xs sm:text-sm mt-0.5 leading-relaxed">
-                        Đọng nước cục bộ mép đường hoặc hố ga thu gom, độ sâu ngập dưới 10cm. Thời gian nước rút nhanh chóng dưới 30 phút, phương tiện lưu thông an toàn.
+                        Toàn bộ 50 điểm ngập trên bản đồ là các vị trí trũng thấp, ngập sâu khi lượng mưa từ 30mm trở lên hoặc triều cường dâng cao. Nước gây chết máy phương tiện và cản trở lưu thông nghiêm trọng. Hệ thống tập trung hiển thị 50 điểm xung yếu này theo đúng tài liệu.
                       </p>
                     </div>
                   </div>
